@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const protectedRoutes = ["/my-registrations"];
 const adminRoutes = ["/admin"];
 
 export function middleware(request: NextRequest) {
@@ -12,7 +11,7 @@ export function middleware(request: NextRequest) {
   const isRegistrationRoute = pathname.match(/^\/events\/[^/]+\/register$/);
   const isProtectedRoute = pathname.startsWith("/my-registrations") || Boolean(isRegistrationRoute);
 
-  if ((isProtectedRoute || protectedRoutes.some((route) => pathname.startsWith(route))) && !isAuthenticated) {
+  if (isProtectedRoute && !isAuthenticated) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

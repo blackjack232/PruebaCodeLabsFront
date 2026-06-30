@@ -1,28 +1,10 @@
-"use client";
-
+import { cookies } from "next/headers";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { LogoutButton } from "@/shared/components/LogoutButton";
 
-const roleFromCookie = () => {
-  if (typeof document === "undefined") return "";
-  const roleCookie = document.cookie
-    .split("; ")
-    .find((cookie) => cookie.startsWith("ems_role="));
-
-  return roleCookie?.split("=")[1] ?? "";
-};
-
-export function Navbar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const role = roleFromCookie();
-
-  const onLogout = () => {
-    fetch("/api/session", { method: "DELETE" }).finally(() => {
-      router.push("/login");
-      router.refresh();
-    });
-  };
+export async function Navbar() {
+  const cookieStore = await cookies();
+  const isAuthenticated = cookieStore.get("ems_authenticated")?.value === "true";
 
   return (
     <header className="border-b border-gray-200 bg-white">
@@ -30,25 +12,11 @@ export function Navbar() {
         <Link href="/" className="text-lg font-bold text-blue-700">
           Event Management
         </Link>
-        <div className="flex items-center gap-4 text-sm font-medium">
-          <Link href="/events" className={pathname.startsWith("/events") ? "text-blue-700" : "text-gray-700"}>
-            Eventos
-          </Link>
-          <Link href="/my-registrations" className={pathname === "/my-registrations" ? "text-blue-700" : "text-gray-700"}>
-            Mis inscripciones
-          </Link>
-          <Link href="/admin" className={pathname.startsWith("/admin") ? "text-blue-700" : "text-gray-700"}>
-            Admin
-          </Link>
-          {role ? (
-            <button type="button" onClick={onLogout} className="rounded-md bg-gray-100 px-3 py-1 text-gray-700 hover:bg-gray-200">
-              Salir
-            </button>
-          ) : (
-            <Link href="/login" className={pathname === "/login" ? "text-blue-700" : "text-gray-700"}>
-              Login
-            </Link>
-          )}
+        <div className="flex items-center gap-4 text-sm font-medium text-gray-700">
+          <Link href="/events">Eventos</Link>
+          <Link href="/my-registrations">Mis inscripciones</Link>
+          <Link href="/admin">Admin</Link>
+          {isAuthenticated ? <LogoutButton /> : <Link href="/login">Login</Link>}
         </div>
       </nav>
     </header>
