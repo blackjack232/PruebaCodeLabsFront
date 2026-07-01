@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const adminRoutes = ["/admin"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAuthenticated = request.cookies.get("ems_authenticated")?.value === "true";

@@ -17,9 +17,9 @@ export const registrationService = {
     };
   },
 
-  async getMyRegistrations(): Promise<MyRegistrationDto[]> {
+  async getMyRegistrations(): Promise<MyRegistrationDto> {
     if (!useMock) {
-      const response = await apiClient.get<MyRegistrationDto[]>("/registrations/me");
+      const response = await apiClient.get<MyRegistrationDto>("/registrations/me");
       return response.data;
     }
 

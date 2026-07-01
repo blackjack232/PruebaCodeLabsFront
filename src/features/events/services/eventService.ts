@@ -2,6 +2,15 @@ import { mockEvents } from "@/features/events/data/mockEvents";
 import { apiClient } from "@/shared/services/http/axios";
 import { EventDetailDto, EventStatisticsDto, EventSummaryDto } from "@/shared/types/dto";
 
+// 1. Definimos la interfaz que empaca las respuestas de tu .NET
+interface OperationResult<T> {
+  success: boolean;
+  message: string;
+  statusCode: number;
+  errors: string[];
+  data: T; // <-- Aquí viene el objeto o arreglo real
+}
+
 const useMock = process.env.NEXT_PUBLIC_USE_MOCK !== "false";
 
 const wait = async () => new Promise((resolve) => setTimeout(resolve, 250));
@@ -9,8 +18,13 @@ const wait = async () => new Promise((resolve) => setTimeout(resolve, 250));
 export const eventService = {
   async getEvents(search: string): Promise<EventSummaryDto[]> {
     if (!useMock) {
-      const response = await apiClient.get<EventSummaryDto[]>("/events", { params: { search } });
-      return response.data;
+      // Tipamos la respuesta para decirle a Axios que viene envuelta en un OperationResult
+      const response = await apiClient.get<OperationResult<EventSummaryDto[]>>("/Events", { 
+        params: { search } 
+      });
+      console.log("response.data", response.data);
+      // Retornamos el .data interno de tu backend (.data.data)
+      return response.data.data;
     }
 
     await wait();
@@ -25,14 +39,14 @@ export const eventService = {
         return true;
       }
 
-      return event.name.toLowerCase().includes(normalizedSearch);
+      return event.title.toLowerCase().includes(normalizedSearch);
     });
   },
 
   async getEventById(id: string): Promise<EventDetailDto> {
     if (!useMock) {
-      const response = await apiClient.get<EventDetailDto>(`/events/${id}`);
-      return response.data;
+      const response = await apiClient.get<OperationResult<EventDetailDto>>(`/Events/${id}`);
+      return response.data.data;
     }
 
     await wait();
@@ -48,8 +62,10 @@ export const eventService = {
 
   async getAdminEvents(): Promise<EventSummaryDto[]> {
     if (!useMock) {
-      const response = await apiClient.get<EventSummaryDto[]>("/admin/events");
-      return response.data;
+      // Ajustado a la ruta estándar de tu controlador si aplica, o cámbiala por la real de tu .NET
+      const response = await apiClient.get<OperationResult<EventSummaryDto[]>>("/Events");
+     
+      return response.data.data;
     }
 
     await wait();
@@ -58,32 +74,33 @@ export const eventService = {
 
   async getEventStatistics(id: string): Promise<EventStatisticsDto> {
     if (!useMock) {
-      const response = await apiClient.get<EventStatisticsDto>(`/admin/events/${id}/statistics`);
-      return response.data;
+      // Ajustado para apuntar al endpoint que vimos en el controlador de .NET: {id}/statistics
+      const response = await apiClient.get<OperationResult<EventStatisticsDto>>(`/Events/${id}/statistics`);
+      return response.data.data;
     }
 
     const event = await this.getEventById(id);
 
     return {
       eventId: event.id,
-      eventName: event.name,
+      eventName: event.title,
       capacity: event.capacity,
-      registered: event.registered,
-      available: event.capacity - event.registered,
-      occupancy: Math.round((event.registered / event.capacity) * 100),
-      recentRegistrations: [
+      totalRegistrations: event.registered,
+      availableSeats: event.capacity - event.registered,
+      occupancyPercentage: Math.round((event.registered / event.capacity) * 100),
+      registrations: [
         {
           id: "a-1",
-          name: "Laura Gómez",
-          email: "laura@example.com",
-          createdAt: "2026-06-01T08:30:00.000Z",
+          userName: "Laura Gómez",
+          userEmail: "laura@example.com",
+          registrationDate: "2026-06-01T08:30:00.000Z",
           status: "Confirmed",
         },
         {
           id: "a-2",
-          name: "Carlos Díaz",
-          email: "carlos@example.com",
-          createdAt: "2026-06-01T10:00:00.000Z",
+          userName: "Carlos Díaz",
+          userEmail: "carlos@example.com",
+          registrationDate: "2026-06-01T10:00:00.000Z",
           status: "Pending",
         },
       ],

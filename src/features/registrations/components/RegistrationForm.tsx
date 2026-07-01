@@ -37,10 +37,14 @@ export function RegistrationForm({ eventId }: { eventId: string }) {
   const onSubmit = async (values: RegistrationFormValues) => {
     setMessage("");
 
+    // const response = await mutation.mutateAsync({
+    //   ...values,
+    //   notes: values.notes ?? "",
+    //   eventId,
+    // });
     const response = await mutation.mutateAsync({
-      ...values,
-      notes: values.notes ?? "",
       eventId,
+      notes: values.notes ?? "",
     });
 
     setMessage(`Registro realizado correctamente. Estado: ${response.status}`);

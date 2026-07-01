@@ -31,10 +31,10 @@ export default function AdminEventsPage() {
         <tbody>
           {data?.map((event) => (
             <tr key={event.id} className="border-b border-gray-100">
-              <td className="py-2">{event.name}</td>
-              <td className="py-2">{toDate(event.date)}</td>
+              <td className="py-2">{event.title}</td>
+              <td className="py-2">{toDate(event.startDate)}</td>
               <td className="py-2">{event.capacity}</td>
-              <td className="py-2">{event.registered}</td>
+              <td className="py-2">{event.capacity - event.availableSeats}</td>
               <td className="py-2">
                 <Link href={`/admin/events/${event.id}`} className="text-blue-700 hover:underline">
                   Ver

@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { authService } from "@/features/auth/services/authService";
-import { accessTokenStore } from "@/shared/services/http/accessTokenStore";
 
 const loginSchema = z.object({
   email: z.string().min(1, "El correo es obligatorio.").email("El correo no es válido."),
@@ -27,19 +26,20 @@ export function LoginForm() {
     defaultValues: { email: "", password: "" },
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
+ const onSubmit = async (values: LoginFormValues) => {
     setError("");
 
     try {
       const response = await authService.login(values);
-      accessTokenStore.set(response.accessToken);
-      await fetch("/api/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: response.role }),
-      });
-      router.push(response.role === "Admin" ? "/admin" : "/events");
-      router.refresh();
+
+      const userRole = response.data?.user?.role || "User";
+
+      if (userRole === "Admin") {
+        router.push("/admin");
+      } else {
+        router.push("/events");
+      }
+      
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Error inesperado.");
     }

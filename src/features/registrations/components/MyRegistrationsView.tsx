@@ -14,7 +14,7 @@ export function MyRegistrationsView() {
   if (isError) return <ErrorState message="No fue posible consultar tus inscripciones." />;
 
   const rows =
-    data?.filter((item) => item.eventName.toLowerCase().includes(search.trim().toLowerCase())) ?? [];
+    data?.data.filter((item) => item.eventName.toLowerCase().includes(search.trim().toLowerCase())) ?? [];
 
   return (
     <section className="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
@@ -36,7 +36,7 @@ export function MyRegistrationsView() {
             {rows.map((row) => (
               <tr key={row.id} className="border-b border-gray-100">
                 <td className="py-2">{row.eventName}</td>
-                <td className="py-2">{toDate(row.eventDate)}</td>
+                <td className="py-2">{toDate(row.registrationDate)}</td>
                 <td className="py-2">{row.status}</td>
               </tr>
             ))}

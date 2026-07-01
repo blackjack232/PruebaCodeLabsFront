@@ -1,7 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { accessTokenStore } from "@/shared/services/http/accessTokenStore";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api/v1";
+const API_BASE_URL = "/api/backend";
 
 interface RetriableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -10,18 +9,13 @@ interface RetriableRequestConfig extends InternalAxiosRequestConfig {
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = accessTokenStore.get();
-
-  if (token) {
-    config.headers.Authorization = "Bearer " + token;
-  }
-
   config.headers["Accept-Language"] = "es-CO";
   config.headers["X-Correlation-Id"] = crypto.randomUUID();
 
@@ -35,7 +29,9 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
-      accessTokenStore.clear();
+      if (typeof window !== "undefined") {
+        fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+      }
     }
 
     return Promise.reject(error);
